@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Letterheads</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: row-reverse;
+                align-items: flex-start;
+                background-color: #f7f7f7;
+            }
+
+            #toolbar {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                height: 100vh;
+                background-color: #fff;
+                padding: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                position: sticky;
+                right: 0; /* Changed position to right */
+                z-index: 1000;
+            }
+
+            #canvas-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid #ccc;
+                width: 100%;
+                max-width: calc(100% - 250px); /* Adjusted width for the canvas container */
+                background-color: #fff;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin: 0 10px;
+                overflow-x: auto;
+            }
+
+            #letterhead {
+                border: 1px solid #000;
+                width: 100%;
+                height: auto;
+            }
+
+            #elements-list {
+                margin-top: 20px;
+                list-style-type: none;
+                padding: 0;
+                max-width: 800px;
+            }
+
+            #elements-list li {
+                padding: 5px;
+                background-color: #fff;
+                margin-bottom: 5px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                border-radius: 3px;
+            }
+
+            button,
+            input[type="color"],
+            input[type="file"] {
+                padding: 10px 20px;
+                margin: 5px;
+                border: none;
+                border-radius: 5px;
+                background-color: #007BFF;
+                color: white;
+                cursor: pointer;
+            }
+
+            button:hover,
+            input[type="color"]:hover,
+            input[type="file"]:hover {
+                background-color: #0056b3;
+            }
+
+            input[type="file"] {
+                background-color: #28a745;
+            }
+
+            input[type="file"]:hover {
+                background-color: #218838;
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    flex-direction: column;
+                }
+
+                #toolbar {
+                    flex-direction: row;
+                    justify-content: center;
+                    align-items: flex-start;
+                    width: 100%;
+                    height: auto;
+                    position: static;
+                }
+
+                #canvas-container {
+                    width: 100%;
+                    padding: 10px;
+                    margin: 10px 0;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="toolbar">
+            <button onclick="addText()"><i class="fas fa-font"></i>&nbsp; Text</button>
+            <button onclick="addParagraph()"><i class="fas fa-paragraph"></i>&nbsp; Paragraph</button>
+            <button onclick="addLogo()"><i class="fas fa-image"></i> &nbsp; logo</button>
+            <input type="color" id="colorPicker" title="Change Color"  onchange="changeColor()"> 
+            <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" title="Upload Image">
+            <button onclick="deleteSelected()"><i class="fas fa-trash-alt"></i></button>
+            <button onclick="downloadLetterhead()"><i class="fas fa-download"></i></button>
+        </div>
+        
+        <div id="canvas-container">
+            <canvas id="letterhead"></canvas>
+        </div>
+        <div id="elements-list">
+            <ul id="elements"></ul>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const canvas = new fabric.Canvas('letterhead', {
+                    width: 800,
+                    height: 1000,
+                    backgroundColor: 'white'
+                });
+
+                // Function to add a text box to the canvas
+                window.addText = function () {
+                    const text = new fabric.Textbox('New Text', {
+                        left: 100,
+                        top: 100,
+                        width: 200,
+                        fontSize: 20,
+                        fill: '#000'
+                    });
+                    canvas.add(text);
+                    updateElementList();
+                }
+
+                // Function to add a paragraph box to the canvas
+                window.addParagraph = function () {
+                    // Create a new paragraph box with default text, position, size, and color
+                    const paragraph = new fabric.Textbox('New Paragraph', {
+                        left: 100,
+                        top: 200,
+                        width: 400,
+                        fontSize: 16,
+                        fill: '#000'
+                    });
+                    // Add the paragraph box to the canvas
+                    canvas.add(paragraph);
+                    // Update the list of elements displayed on the page
+                    updateElementList();
+                }
+
+                // Function to add a logo image to the canvas
+                window.addLogo = function () {
+                    const logoUrl = 'https://fast-infotech.vercel.app/hirensir.jpeg';
+                    fabric.Image.fromURL(logoUrl, function (img) {
+                        const maxWidth = 100;
+                        const maxHeight = 100;
+                        const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+                        img.set({
+                            left: 100,
+                            top: 50,
+                            scaleX: scale,
+                            scaleY: scale
+                        });
+                        canvas.add(img);
+                        updateElementList();
+                    });
+                }
+
+                // Function to change the color of selected text
+                window.changeColor = function () {
+                    const color = document.getElementById('colorPicker').value;
+                    const activeObject = canvas.getActiveObject();
+                    if (activeObject && activeObject.type === 'textbox') {
+                        activeObject.set('fill', color);
+                        canvas.renderAll();
+                    } else {
+                        // If no text box is selected, show an alert message
+                        alert("Please select a text object to change its color.");
+                    }
+                }
+
+                // Function to handle image upload and add the image to the canvas
+                window.handleImageUpload = function (event) {
+                    // Read the uploaded image file
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        fabric.Image.fromURL(reader.result, function (img) {
+                            img.set({
+                                left: 100,
+                                top: 100
+                            });
+                            // Add the image to the canvas
+                            canvas.add(img);
+                            updateElementList();
+                        });
+                    }
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+
+                // Function to delete the selected object from the canvas
+                window.deleteSelected = function () {
+                    const activeObject = canvas.getActiveObject();
+                    // If an object is selected, remove it from the canvas
+                    if (activeObject) {
+                        canvas.remove(activeObject);
+                    } else {
+                        // If no object is selected, show an alert message
+                        alert("Please select an object to delete.");
+                    }
+                }
+
+                // Function to download the canvas content as an image
+                window.downloadLetterhead = function () {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL({
+                        format: 'png',
+                        quality: 1
+                    });
+                    link.download = 'letterhead.png';
+                    link.click();
+                }
+
+                // Function to update the list of elements displayed on the page
+                function updateElementList() {
+                    const elementsList = document.getElementById('elements');
+                    elementsList.innerHTML = '';
+                    canvas.getObjects().forEach((obj, index) => {
+                        const li = document.createElement('li');
+                        li.textContent = `${index + 1}: ${obj.type}`;
+                        elementsList.appendChild(li);
+                    });
+                }
+
+                canvas.on('object:added', updateElementList);
+                canvas.on('object:removed', updateElementList);
+                canvas.on('object:modified', updateElementList);
+            });
+
+        </script>
+    </body>
+
+    </html>
