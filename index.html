@@ -119,7 +119,6 @@
         <div id="toolbar">
             <button onclick="addText()"><i class="fas fa-font"></i>&nbsp; Text</button>
             <button onclick="addParagraph()"><i class="fas fa-paragraph"></i>&nbsp; Paragraph</button>
-            <button onclick="addLogo()"><i class="fas fa-image"></i> &nbsp; logo</button>
             <input type="color" id="colorPicker" title="Change Color"  onchange="changeColor()"> 
             <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" title="Upload Image">
             <button onclick="deleteSelected()"><i class="fas fa-trash-alt"></i></button>
@@ -170,23 +169,7 @@
                     updateElementList();
                 }
 
-                // Function to add a logo image to the canvas
-                window.addLogo = function () {
-                    const logoUrl = 'https://fast-infotech.vercel.app/hirensir.jpeg';
-                    fabric.Image.fromURL(logoUrl, function (img) {
-                        const maxWidth = 100;
-                        const maxHeight = 100;
-                        const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-                        img.set({
-                            left: 100,
-                            top: 50,
-                            scaleX: scale,
-                            scaleY: scale
-                        });
-                        canvas.add(img);
-                        updateElementList();
-                    });
-                }
+               
 
                 // Function to change the color of selected text
                 window.changeColor = function () {
