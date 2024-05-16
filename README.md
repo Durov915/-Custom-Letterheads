@@ -1,7 +1,6 @@
 # -Custom-Letterheads
 
 
-Sure, here's a simple README file written in a friendly and easy-to-understand language, including emojis for clarity:
 
 🎨 Custom Letterheads
 Custom Letterheads is a web application that allows you to create personalized letterhead designs with ease! 🖌️
