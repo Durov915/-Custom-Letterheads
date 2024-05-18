@@ -5,243 +5,387 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Letterheads</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: #f7f7f7;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
 
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: row-reverse;
-                align-items: flex-start;
-                background-color: #f7f7f7;
-            }
+        #toggle-toolbar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-            #toolbar {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                height: 100vh;
-                background-color: #fff;
-                padding: 10px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                position: sticky;
-                right: 0; /* Changed position to right */
-                z-index: 1000;
-            }
+        #toolbar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-width: 250px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 2;
+        }
 
-            #canvas-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                border: 1px solid #ccc;
-                width: 100%;
-                max-width: calc(100% - 250px); /* Adjusted width for the canvas container */
-                background-color: #fff;
-                padding: 20px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                margin: 0 10px;
-                overflow-x: auto;
-            }
+        #toolbar.visible {
+            transform: translateX(0);
+        }
 
-            #letterhead {
-                border: 1px solid #000;
-                width: 100%;
-                height: auto;
-            }
+        #toolbar button,
+        #text-options button,
+        #toolbar input[type="color"],
+        #toolbar input[type="file"] {
+            padding: 10px 20px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-            #elements-list {
-                margin-top: 20px;
-                list-style-type: none;
-                padding: 0;
-                max-width: 800px;
-            }
+        #toolbar input[type="color"] {
+            padding: 0;
+            height: 40px;
+        }
 
-            #elements-list li {
-                padding: 5px;
-                background-color: #fff;
-                margin-bottom: 5px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                border-radius: 3px;
-            }
+        #toolbar input[type="file"] {
+            background-color: #28a745;
+            width: calc(100% - 40px);
+        }
 
-            button,
-            input[type="color"],
-            input[type="file"] {
-                padding: 10px 20px;
-                margin: 5px;
-                border: none;
-                border-radius: 5px;
-                background-color: #007BFF;
-                color: white;
-                cursor: pointer;
-            }
+        #toolbar button:hover,
+        #text-options button:hover,
+        #toolbar input[type="color"]:hover,
+        #toolbar input[type="file"]:hover {
+            background-color: #0056b3;
+        }
 
-            button:hover,
-            input[type="color"]:hover,
-            input[type="file"]:hover {
-                background-color: #0056b3;
-            }
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
 
-            input[type="file"] {
-                background-color: #28a745;
-            }
+        #letterhead {
+            border: 1px solid #000;
+            max-width: 100%;
+            max-height: 80vh;
+        }
 
-            input[type="file"]:hover {
-                background-color: #218838;
-            }
+        #text-options {
+            display: none;
+            position: absolute;
+            top: 63px;
+            right: 0;
+            width: 100%;
+            max-width: 250px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
 
-            @media (max-width: 768px) {
-                body {
-                    flex-direction: column;
-                }
+        #text-options.active {
+            display: flex;
+            flex-direction: column;
+        }
 
-                #toolbar {
-                    flex-direction: row;
-                    justify-content: center;
-                    align-items: flex-start;
-                    width: 100%;
-                    height: auto;
-                    position: static;
-                }
+        #text-options button {
+            padding: 10px 20px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-                #canvas-container {
-                    width: 100%;
-                    padding: 10px;
-                    margin: 10px 0;
-                }
-            }
-        </style>
-    </head>
+        #text-options button:hover {
+            background-color: #0056b3;
+        }
 
-    <body>
-        <div id="toolbar">
-            <button onclick="addText()"><i class="fas fa-font"></i>&nbsp; Text</button>
-            <button onclick="addParagraph()"><i class="fas fa-paragraph"></i>&nbsp; Paragraph</button>
-            <input type="color" id="colorPicker" title="Change Color"  onchange="changeColor()"> 
-            <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" title="Upload Image">
-            <button onclick="deleteSelected()"><i class="fas fa-trash-alt"></i></button>
-            <button onclick="downloadLetterhead()"><i class="fas fa-download"></i></button>
+        #text-options select,
+        #text-options input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #text-options .style {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="toggle-toolbar" onclick="toggleToolbar()"><i class="fas fa-bars"></i></button>
+    <div id="toolbar">
+        <button onclick="openTextOptions('text')"><i class="fas fa-font"></i>&nbsp; Text</button>
+        <button onclick="openTextOptions('paragraph')"><i class="fas fa-paragraph"></i>&nbsp; Paragraph</button>
+        <button onclick="addLogo()"><i class="fas fa-image"></i>&nbsp; Logo</button>
+        <input type="color" id="colorPicker" title="Change Color" onchange="changeColor()">
+        <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" title="Upload Image">
+        <button onclick="deleteSelected()"><i class="fas fa-trash-alt"></i></button>
+        <button onclick="downloadLetterhead()"><i class="fas fa-download"></i></button>
+    </div>
+
+    <div id="text-options">
+        <button onclick="closeTextOptions()">
+            <i class="fas fa-arrow-left"></i>&nbsp; Back
+        </button>
+        <div class="style">
+            <button onclick="toggleBold()"><i class="fas fa-bold"></i></button>
+            <button onclick="toggleItalic()"><i class="fas fa-italic"></i></button>
+            <button onclick="toggleUnderline()"><i class="fas fa-underline"></i></button>
         </div>
-        
-        <div id="canvas-container">
-            <canvas id="letterhead"></canvas>
-        </div>
-        <div id="elements-list">
-            <ul id="elements"></ul>
-        </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const canvas = new fabric.Canvas('letterhead', {
-                    width: 800,
-                    height: 1000,
-                    backgroundColor: 'white'
+        <select id="fontFamilySelect" onchange="changeFontFamily()">
+            <option value="Arial">Arial</option>
+            <option value="Helvetica">Helvetica</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Palatino">Palatino</option>
+            <option value="Garamond">Garamond</option>
+            <option value="Arial Narrow">Arial Narrow</option>
+            <option value="Century Gothic">Century Gothic</option>
+            <option value="Book Antiqua">Book Antiqua</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Candara">Candara</option>
+            <option value="Franklin Gothic Medium">Franklin Gothic Medium</option>
+            <!-- Add more font options as needed -->
+        </select>
+        <input type="text" id="customTextInput" placeholder="Enter custom text...">
+        <button onclick="addCustomText()"><i class="fas fa-plus"></i>&nbsp; Add Text</button>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="letterhead"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
+    <script>
+        const canvas = new fabric.Canvas('letterhead', {
+            width: 800,
+            height: 1000,
+            backgroundColor: 'white'
+        });
+
+        function setBackgroundImage(url) {
+            fabric.Image.fromURL(url, function (img) {
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    scaleX: canvas.width / img.width,
+                    scaleY: canvas.height / img.height
                 });
-
-                // Function to add a text box to the canvas
-                window.addText = function () {
-                    const text = new fabric.Textbox('New Text', {
-                        left: 100,
-                        top: 100,
-                        width: 200,
-                        fontSize: 20,
-                        fill: '#000'
-                    });
-                    canvas.add(text);
-                    updateElementList();
-                }
-
-                // Function to add a paragraph box to the canvas
-                window.addParagraph = function () {
-                    // Create a new paragraph box with default text, position, size, and color
-                    const paragraph = new fabric.Textbox('New Paragraph', {
-                        left: 100,
-                        top: 200,
-                        width: 400,
-                        fontSize: 16,
-                        fill: '#000'
-                    });
-                    // Add the paragraph box to the canvas
-                    canvas.add(paragraph);
-                    // Update the list of elements displayed on the page
-                    updateElementList();
-                }
-
-               
-
-                // Function to change the color of selected text
-                window.changeColor = function () {
-                    const color = document.getElementById('colorPicker').value;
-                    const activeObject = canvas.getActiveObject();
-                    if (activeObject && activeObject.type === 'textbox') {
-                        activeObject.set('fill', color);
-                        canvas.renderAll();
-                    } else {
-                        // If no text box is selected, show an alert message
-                        alert("Please select a text object to change its color.");
-                    }
-                }
-
-                // Function to handle image upload and add the image to the canvas
-                window.handleImageUpload = function (event) {
-                    // Read the uploaded image file
-                    const reader = new FileReader();
-                    reader.onload = function () {
-                        fabric.Image.fromURL(reader.result, function (img) {
-                            img.set({
-                                left: 100,
-                                top: 100
-                            });
-                            // Add the image to the canvas
-                            canvas.add(img);
-                            updateElementList();
-                        });
-                    }
-                    reader.readAsDataURL(event.target.files[0]);
-                }
-
-                // Function to delete the selected object from the canvas
-                window.deleteSelected = function () {
-                    const activeObject = canvas.getActiveObject();
-                    // If an object is selected, remove it from the canvas
-                    if (activeObject) {
-                        canvas.remove(activeObject);
-                    } else {
-                        // If no object is selected, show an alert message
-                        alert("Please select an object to delete.");
-                    }
-                }
-
-                // Function to download the canvas content as an image
-                window.downloadLetterhead = function () {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL({
-                        format: 'png',
-                        quality: 1
-                    });
-                    link.download = 'letterhead.png';
-                    link.click();
-                }
-
-                // Function to update the list of elements displayed on the page
-                function updateElementList() {
-                    const elementsList = document.getElementById('elements');
-                    elementsList.innerHTML = '';
-                    canvas.getObjects().forEach((obj, index) => {
-                        const li = document.createElement('li');
-                        li.textContent = `${index + 1}: ${obj.type}`;
-                        elementsList.appendChild(li);
-                    });
-                }
-
-                canvas.on('object:added', updateElementList);
-                canvas.on('object:removed', updateElementList);
-                canvas.on('object:modified', updateElementList);
             });
+        }
 
-        </script>
-    </body>
+        setBackgroundImage('Leatter Head-01.jpg'); // Replace with your actual image path
 
-    </html>
+        function addCustomText() {
+            const customTextInput = document.getElementById('customTextInput');
+            const customText = customTextInput.value.trim(); // Trim whitespace
+            if (customText !== '') {
+                const newText = new fabric.Textbox(customText, {
+                    left: 100,
+                    top: 200,
+                    width: 200,
+                    fontSize: 20,
+                    fill: '#000',
+                    fontFamily: document.getElementById('fontFamilySelect').value // Set the font family
+                });
+                canvas.add(newText);
+                customTextInput.value = ''; // Clear input after adding text
+                closeTextOptions(); // Close text options after adding text
+            } else {
+                alert("Please enter some text.");
+            }
+        }
+
+        // Add some fixed text to the canvas
+        const fixedText = new fabric.Textbox('Company Name', {
+            left: 100,
+            top: 60,
+            width: 200,
+            fontSize: 28,
+            fill: '#333',
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedText);
+
+        const fixedTextslogan = new fabric.Textbox('Slogan', {
+            left: 400,
+            top: 80,
+            width: 200,
+            fontSize: 28,
+            fill: '#fff',
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedTextslogan);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            window.addParagraph = function () {
+                const paragraph = new fabric.Textbox('New Paragraph', {
+                    left: 100,
+                    top: 200,
+                    width: 400,
+                    fontSize: 16,
+                    fill: '#000',
+                    fontFamily: document.getElementById('fontFamilySelect').value // Set the font family
+                });
+                canvas.add(paragraph);
+                closeTextOptions(); // Close text options after adding paragraph
+            }
+
+            window.changeColor = function () {
+                const color = document.getElementById('colorPicker').value;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'textbox') {
+                    activeObject.set('fill', color);
+                    canvas.renderAll();
+                } else {
+                    alert("Please select a text object to change its color.");
+                }
+            }
+
+            window.handleImageUpload = function (event) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    fabric.Image.fromURL(reader.result, function (img) {
+                        img.set({
+                            left: 100,
+                            top: 100
+                        });
+                        canvas.add(img);
+                    });
+                }
+                reader.readAsDataURL(event.target.files[0]);
+            }
+
+            window.deleteSelected = function () {
+                const activeObjects = canvas.getActiveObjects(); // Get all selected objects
+                if (activeObjects.length) {
+                    activeObjects.forEach(object => {
+                        canvas.remove(object); // Remove each selected object
+                    });
+                    canvas.discardActiveObject(); // Deselect all objects
+                    canvas.renderAll(); // Re-render the canvas
+                } else {
+                    alert("Please select one or more objects to delete.");
+                }
+            }
+
+            window.downloadLetterhead = function () {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1
+                });
+                link.download = 'letterhead.png';
+                link.click();
+            }
+
+            window.openTextOptions = function (type) {
+                document.getElementById('text-options').classList.add('active');
+                // Optional: Add logic to customize the sidebar content based on type (text/paragraph)
+                if (type === 'paragraph') {
+                    document.getElementById('customTextInput').placeholder = "Enter paragraph text...";
+                } else {
+                    document.getElementById('customTextInput').placeholder = "Enter custom text...";
+                }
+            }
+
+            window.closeTextOptions = function () {
+                document.getElementById('text-options').classList.remove('active');
+            }
+
+            window.toggleBold = function () {
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'textbox') {
+                    activeObject.set("fontWeight", activeObject.fontWeight === "bold" ? "normal" : "bold");
+                    canvas.renderAll();
+                } else {
+                    alert("Please select a text object to make it bold.");
+                }
+            }
+
+            window.toggleItalic = function () {
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'textbox') {
+                    activeObject.set("fontStyle", activeObject.fontStyle === "italic" ? "normal" : "italic");
+                    canvas.renderAll();
+                } else {
+                    alert("Please select a text object to italicize it.");
+                }
+            }
+
+            window.toggleUnderline = function () {
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'textbox') {
+                    activeObject.set("underline", !activeObject.underline);
+                    canvas.renderAll();
+                } else {
+                    alert("Please select a text object to underline it.");
+                }
+            }
+
+            window.changeFontFamily = function () {
+                const fontFamily = document.getElementById('fontFamilySelect').value;
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && activeObject.type === 'textbox') {
+                    activeObject.set("fontFamily", fontFamily);
+                    canvas.renderAll();
+                } else {
+                    alert("Please select a text object to change its fontfamily.");
+}
+            }
+        });
+
+        function toggleToolbar() {
+            const toolbar = document.getElementById('toolbar');
+            toolbar.classList.toggle('visible');
+        }
+    </script>
+</body>
+
+</html>
