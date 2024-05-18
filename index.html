@@ -75,7 +75,8 @@
 
         #toolbar input[type="file"] {
             background-color: #28a745;
-            width: calc(100% - 40px);
+            width: calc(105% - 178px);
+            color: transparent;
         }
 
         #toolbar button:hover,
@@ -99,7 +100,7 @@
         #letterhead {
             border: 1px solid #000;
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 130vh;
         }
 
         #text-options {
@@ -161,9 +162,12 @@
     <div id="toolbar">
         <button onclick="openTextOptions('text')"><i class="fas fa-font"></i>&nbsp; Text</button>
         <button onclick="openTextOptions('paragraph')"><i class="fas fa-paragraph"></i>&nbsp; Paragraph</button>
-        <button onclick="addLogo()"><i class="fas fa-image"></i>&nbsp; Logo</button>
         <input type="color" id="colorPicker" title="Change Color" onchange="changeColor()">
-        <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" title="Upload Image">
+        <div class="upload" style="display: flex;align-items: center;justify-self: center;gap: 43px;font-weight: 600;">
+            Add Logo:
+            <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)" value="upload logo"
+                title="Upload Image">
+        </div>
         <button onclick="deleteSelected()"><i class="fas fa-trash-alt"></i></button>
         <button onclick="downloadLetterhead()"><i class="fas fa-download"></i></button>
     </div>
@@ -220,7 +224,7 @@
             });
         }
 
-        setBackgroundImage('Leatter Head-01.jpg'); // Replace with your actual image path
+        setBackgroundImage('Leatter Head-01.jpg'); //    with your actual image path
 
         function addCustomText() {
             const customTextInput = document.getElementById('customTextInput');
@@ -242,13 +246,15 @@
             }
         }
 
-        // Add some fixed text to the canvas
+        // Add some fixed text to the canvas  
         const fixedText = new fabric.Textbox('Company Name', {
             left: 100,
             top: 60,
             width: 200,
             fontSize: 28,
             fill: '#333',
+            lockMovementX: true,
+            lockMovementY: true,
             fontFamily: 'Arial' // Set the font family
         });
         canvas.add(fixedText);
@@ -257,11 +263,68 @@
             left: 400,
             top: 80,
             width: 200,
+            lockMovementX: true,
+            lockMovementY: true,
             fontSize: 28,
             fill: '#fff',
             fontFamily: 'Arial' // Set the font family
         });
         canvas.add(fixedTextslogan);
+
+        // -------------------------------------------------------------------------
+
+        const fixedTextadd = new fabric.Textbox('YOUR ADDRESS GOES HERE ', {
+            left: 535,
+            top: 822,
+            width: 1200,
+            height: 1200,
+            fontSize: 10,
+            fill: '#333',
+            lockMovementX: true,
+            lockMovementY: true,
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedTextadd);
+
+
+
+        const fixedTextemail = new fabric.Textbox('YOUREMAIL@email.com', {
+            left: 558,
+            top: 845,
+            width: 200,
+            fontSize: 10,
+            fill: '#333',
+            lockMovementX: true,
+            lockMovementY: true,
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedTextemail);
+
+
+        const fixedTextnum = new fabric.Textbox('+123-456789', {
+            left: 612,
+            top: 872,
+            width: 200,
+            fontSize: 10,
+            fill: '#333',
+            lockMovementX: true,
+            lockMovementY: true,
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedTextnum);
+
+
+        const fixedTextweb = new fabric.Textbox('YOURWEBSITE.com', {
+            left: 575,
+            top: 898,
+            width: 200,
+            fontSize: 10,
+            fill: '#333',
+            lockMovementX: true,
+            lockMovementY: true,
+            fontFamily: 'Arial' // Set the font family
+        });
+        canvas.add(fixedTextweb);
 
         document.addEventListener("DOMContentLoaded", function () {
             window.addParagraph = function () {
@@ -377,7 +440,7 @@
                     canvas.renderAll();
                 } else {
                     alert("Please select a text object to change its fontfamily.");
-}
+                }
             }
         });
 
